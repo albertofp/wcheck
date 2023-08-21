@@ -18,8 +18,12 @@ func main() {
 		panic("No API key set.")
 	}
 
-	city := "Berlin"
 	API_KEY := os.Getenv("WEATHERAPI_KEY")
+
+	city := "Berlin"
+	if len(os.Args) >= 2 {
+		city = os.Args[1]
+	}
 
 	//https://www.weatherapi.com/api-explorer.aspx#forecast
 	query := fmt.Sprintf(
