@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
@@ -19,7 +21,12 @@ func main() {
 	city := "Berlin"
 	API_KEY := os.Getenv("WEATHERAPI_KEY")
 
-	query := fmt.Sprintf("http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=1&aqi=no&alerts=no", API_KEY, city)
+	//https://www.weatherapi.com/api-explorer.aspx#forecast
+	query := fmt.Sprintf(
+		"http://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=1&aqi=no&alerts=no",
+		API_KEY,
+		city,
+	)
 	res, err := http.Get(query)
 	if err != nil {
 		panic(err)
@@ -40,9 +47,41 @@ func main() {
 		panic(err)
 	}
 
-	location, current, _ := weather.Location, weather.Current, weather.Forecast.Forecastday[0]
+	location, current, hours := weather.Location, weather.Current, weather.Forecast.Forecastday[0].Hour
 
-	fmt.Printf("%s, %s: %.0fC, %s\n", location.Name, location.Country, current.TempC, current.Condition.Text)
+	fmt.Printf(
+		"%s, %s: %.0fC, %s\n",
+		location.Name,
+		location.Country,
+		current.TempC,
+		current.Condition.Text,
+	)
+
+	for _, hour := range hours {
+		date := time.Unix(hour.TimeEpoch, 0)
+
+		if date.Before(time.Now()) {
+			continue
+		}
+
+		msg := fmt.Sprintf("%s - %.0fC, %.0f, %s\n",
+			// https://pkg.go.dev/time#pkg-constants
+			date.Format("15:04"),
+			hour.TempC,
+			hour.ChanceOfRain,
+			hour.Condition.Text,
+		)
+		switch {
+		case hour.TempC < 0:
+			color.Blue(msg)
+		case hour.TempC < 20:
+			color.Cyan(msg)
+		case hour.TempC > 30:
+			color.Red(msg)
+		default:
+			fmt.Print(msg)
+		}
+	}
 }
 
 type Weather struct {
