@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/enescakir/emoji"
 	"github.com/fatih/color"
 )
 
@@ -72,13 +73,16 @@ func main() {
 		)
 		switch {
 		case hour.TempC < 0:
+			fmt.Printf("%v", emoji.Snowflake)
 			color.Blue(msg)
 		case hour.TempC < 20:
+			fmt.Printf("%v", emoji.Coat)
 			color.Cyan(msg)
-		case hour.TempC > 30:
+		case hour.TempC >= 30:
+			fmt.Printf("%v", emoji.Fire)
 			color.Red(msg)
 		default:
-			fmt.Print(msg)
+			fmt.Printf("%v %s", emoji.ThumbsUp, msg)
 		}
 	}
 }
